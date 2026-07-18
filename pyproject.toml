@@ -1,7 +1,7 @@
 [project]
 name = "sql-generator-consultant"
 version = "0.1.0"
-description = "AI SQL Query Generator — convierte lenguaje natural a SQL con MiniMax y PostgreSQL"
+description = "AI SQL Query Generator — convierte lenguaje natural a SQL con Anthropic Claude y PostgreSQL"
 requires-python = ">=3.11"
 
 [tool.ruff]
