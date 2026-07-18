@@ -1,0 +1,15 @@
+AGENTS.md
+CLAUDE.md
+.harness/agents.md
+.harness/agents/context-manager.md
+.harness/agents/implementer.md
+.harness/agents/planner.md
+.harness/agents/researcher.md
+.harness/agents/reviewer.md
+.harness/memory/current-progress.json
+.harness/memory/history.md
+.harness/research/.gitkeep
+.harness/research/research-plan.md
+.harness/skills/coding-standards.md
+.harness/tech/.gitkeep
+.harness/tech/tech-plan.md
