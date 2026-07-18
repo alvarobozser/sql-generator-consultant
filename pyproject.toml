@@ -1,0 +1,39 @@
+[project]
+name = "sql-generator-consultant"
+version = "0.1.0"
+description = "AI SQL Query Generator — convierte lenguaje natural a SQL con MiniMax y PostgreSQL"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [".venv", "build", "dist"]
+
+[tool.ruff.lint]
+# Reglas razonables para un proyecto didáctico
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "B",      # bugbear (trampas comunes)
+    "UP",     # pyupgrade
+    "SIM",    # simplifications
+]
+ignore = [
+    "E501",   # line too long (lo gestiona black)
+    "B008",   # do not perform function calls in argument defaults (pydantic lo necesita)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+extend-exclude = ".venv"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-v --tb=short"
