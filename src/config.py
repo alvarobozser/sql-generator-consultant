@@ -18,14 +18,12 @@ load_dotenv()
 
 
 # Mensajes de error como constantes para reutilizar y testear.
-ERR_MISSING_API_KEY = "MINIMAX_API_KEY no está definida en .env ni en el entorno"
-ERR_MISSING_BASE_URL = "MINIMAX_BASE_URL no está definida en .env ni en el entorno"
-ERR_MISSING_MODEL = "MINIMAX_MODEL no está definida en .env ni en el entorno"
+ERR_MISSING_API_KEY = "ANTHROPIC_API_KEY no está definida en .env ni en el entorno"
 ERR_MISSING_DATABASE_URL = "DATABASE_URL no está definida en .env ni en el entorno"
 ERR_INVALID_LANGUAGE = "APP_LANGUAGE debe ser 'es' o 'en', se recibió: {value}"
 
 # Valores por defecto.
-DEFAULT_MINIMAX_MODEL = "opencode-go/MiniMax-M3"
+DEFAULT_LLM_MODEL = "claude-haiku-4-5"
 DEFAULT_APP_LANGUAGE = "es"
 VALID_LANGUAGES = ("es", "en")
 
@@ -35,16 +33,14 @@ class AppConfig:
     """Configuración inmutable de la aplicación.
 
     Attributes:
-        minimax_api_key: API key de MiniMax.
-        minimax_base_url: URL base de la API de MiniMax.
-        minimax_model: Modelo a usar.
+        anthropic_api_key: API key de Anthropic (formato 'sk-ant-...').
+        llm_model: Modelo a usar. Por defecto claude-haiku-4-5.
         database_url: Cadena de conexión a PostgreSQL.
         app_language: Idioma por defecto ('es' o 'en').
     """
 
-    minimax_api_key: str
-    minimax_base_url: str
-    minimax_model: str
+    anthropic_api_key: str
+    llm_model: str
     database_url: str
     app_language: str
 
@@ -74,22 +70,20 @@ def load_config() -> AppConfig:
     Raises:
         ValueError: Si falta alguna variable obligatoria o tiene un valor inválido.
     """
-    minimax_api_key = _get_required("MINIMAX_API_KEY", ERR_MISSING_API_KEY)
-    minimax_base_url = _get_required("MINIMAX_BASE_URL", ERR_MISSING_BASE_URL)
+    anthropic_api_key = _get_required("ANTHROPIC_API_KEY", ERR_MISSING_API_KEY)
     database_url = _get_required("DATABASE_URL", ERR_MISSING_DATABASE_URL)
 
-    # El modelo es opcional (tiene default).
-    minimax_model = _get_optional("MINIMAX_MODEL", DEFAULT_MINIMAX_MODEL)
+    # Modelo opcional con default sensato (Haiku: rápido, barato, bueno en SQL).
+    llm_model = _get_optional("LLM_MODEL", DEFAULT_LLM_MODEL)
 
-    # El idioma es opcional pero validado.
+    # Idioma opcional pero validado.
     app_language = _get_optional("APP_LANGUAGE", DEFAULT_APP_LANGUAGE)
     if app_language not in VALID_LANGUAGES:
         raise ValueError(ERR_INVALID_LANGUAGE.format(value=app_language))
 
     return AppConfig(
-        minimax_api_key=minimax_api_key,
-        minimax_base_url=minimax_base_url,
-        minimax_model=minimax_model,
+        anthropic_api_key=anthropic_api_key,
+        llm_model=llm_model,
         database_url=database_url,
         app_language=app_language,
     )
