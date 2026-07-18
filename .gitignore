@@ -1,15 +1,49 @@
-AGENTS.md
-CLAUDE.md
-.harness/agents.md
-.harness/agents/context-manager.md
-.harness/agents/implementer.md
-.harness/agents/planner.md
-.harness/agents/researcher.md
-.harness/agents/reviewer.md
-.harness/memory/current-progress.json
-.harness/memory/history.md
-.harness/research/.gitkeep
-.harness/research/research-plan.md
-.harness/skills/coding-standards.md
-.harness/tech/.gitkeep
-.harness/tech/tech-plan.md
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+ENV/
+
+# Distribución / builds
+*.egg-info/
+build/
+dist/
+.eggs/
+*.egg
+
+# --- Secrets y variables de entorno ---
+.env
+.env.*
+!.env.example
+
+# --- Bases de datos (archivos generados en runtime) ---
+*.db
+*.sqlite
+*.sqlite3
+*.duckdb
+
+# --- Logs y temporales ---
+*.log
+*.tmp
+*.bak
+*.swp
+.DS_Store
+Thumbs.db
+
+# --- IDEs / editores ---
+.vscode/
+.idea/
+*.iml
+
+# --- Estado interno del harness (sesiones del agente) ---
+.harness/memory/
+.harness/research/
+.harness/tech/
+
+# NOTA: AGENTS.md y CLAUDE.md SÍ se trackean — son docs del proyecto.
