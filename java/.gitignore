@@ -1,0 +1,14 @@
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+.factorypath
+.mvn/wrapper/maven-wrapper.jar
+HELP.md

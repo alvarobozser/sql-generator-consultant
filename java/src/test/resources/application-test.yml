@@ -1,0 +1,12 @@
+# Test profile: H2 in-memory (modo PostgreSQL) para tests rapidos sin Docker.
+# Para tests de integracion con Postgres real, se usa Testcontainers (Task 6+).
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+
+  sql:
+    init:
+      mode: never  # schema.sql real se carga via Testcontainers cuando hace falta
