@@ -1,3 +1,7 @@
 import { Routes } from '@angular/router';
 
-export const routes: Routes = [];
+import { QUERY_ROUTES } from './features/query/query.routes';
+
+export const routes: Routes = [
+  { path: '', children: QUERY_ROUTES },
+];

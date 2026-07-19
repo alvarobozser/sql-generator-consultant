@@ -1,0 +1,78 @@
+<div class="query-container">
+  <header class="query-header">
+    <h1>{{ i18n.t('title') }}</h1>
+    <p class="subtitle">{{ i18n.t('subtitle') }}</p>
+  </header>
+
+  <div class="language-toggle">
+    <span>{{ i18n.t('language_toggle') }}:</span>
+    <button
+      type="button"
+      [class.active]="language() === 'es'"
+      (click)="language() === 'en' && onLanguageToggle()">
+      ES
+    </button>
+    <button
+      type="button"
+      [class.active]="language() === 'en'"
+      (click)="language() === 'es' && onLanguageToggle()">
+      EN
+    </button>
+  </div>
+
+  <form (ngSubmit)="onSubmit()" class="query-form">
+    <textarea
+      [value]="question()"
+      (input)="question.set($any($event.target).value)"
+      [placeholder]="i18n.t('question_placeholder')"
+      [disabled]="loading()"
+      rows="4"></textarea>
+
+    <button
+      type="submit"
+      [disabled]="loading() || !question().trim()">
+      {{ loading() ? i18n.t('thinking') : i18n.t('submit') }}
+    </button>
+  </form>
+
+  <section *ngIf="hasSql()" class="sql-section">
+    <h2>{{ i18n.t('generated_sql') }}</h2>
+    <pre><code>{{ result()?.sql }}</code></pre>
+  </section>
+
+  <section *ngIf="hasError()" class="error-section">
+    <h2>{{ i18n.t('error') }}</h2>
+    <p class="error-message">{{ result()?.error }}</p>
+  </section>
+
+  <section *ngIf="hasRows()" class="results-section">
+    <h2>{{ i18n.t('results') }} ({{ rows().length }} {{ i18n.t('rows_count') }})</h2>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th *ngFor="let col of columns()">{{ col }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows()">
+            <td *ngFor="let col of columns()">{{ row[col] }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section *ngIf="hasResult() && !hasRows() && !hasError()" class="no-results">
+    <p>{{ i18n.t('no_results') }}</p>
+  </section>
+
+  <section class="examples-section">
+    <h3>{{ i18n.t('examples_title') }}</h3>
+    <ul>
+      <li><button type="button" class="example" (click)="onExampleClick(i18n.t('example_1'))">{{ i18n.t('example_1') }}</button></li>
+      <li><button type="button" class="example" (click)="onExampleClick(i18n.t('example_2'))">{{ i18n.t('example_2') }}</button></li>
+      <li><button type="button" class="example" (click)="onExampleClick(i18n.t('example_3'))">{{ i18n.t('example_3') }}</button></li>
+    </ul>
+  </section>
+</div>
