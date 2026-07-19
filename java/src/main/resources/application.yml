@@ -2,7 +2,7 @@ spring:
   application:
     name: sqlgen-backend
 
-  # PostgreSQL: usuario normal (read-write). Usado solo por el init
+  # PostgreSQL: usuario admin (read-write). Usado para inicializar el schema
   # y por el schema-port (que necesita acceso a information_schema).
   datasource:
     url: ${JAVA_DATASOURCE_URL:jdbc:postgresql://localhost:5432/sqlgen}
@@ -10,9 +10,13 @@ spring:
     password: ${JAVA_DATASOURCE_PASSWORD:sqlgen_dev_password}
     driver-class-name: org.postgresql.Driver
 
-  # Segundo DataSource de solo-lectura (defense in depth).
-  # Las queries del usuario se ejecutan con este.
-  # Configurado en DataSourceConfig (Task 6).
+    # Segundo DataSource de solo-lectura (defense in depth).
+    # Las queries del usuario se ejecutan con este.
+    readonly:
+      url: ${JAVA_DATASOURCE_URL:jdbc:postgresql://localhost:5432/sqlgen}
+      username: ${JAVA_DATASOURCE_READONLY_USERNAME:sqlgen_readonly}
+      password: ${JAVA_DATASOURCE_READONLY_PASSWORD:readonly_password}
+      driver-class-name: org.postgresql.Driver
   ai:
     anthropic:
       api-key: ${SPRING_AI_ANTHROPIC_API_KEY:your_key_here}
