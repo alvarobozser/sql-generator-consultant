@@ -5,12 +5,21 @@ Arranca con: streamlit run src/app.py
 
 from __future__ import annotations
 
-import streamlit as st
+import sys
+from pathlib import Path
 
-from src.config import load_config
-from src.llm.client import LLMClient
-from src.orchestrator import process_question
-from src.ui.components import (
+# Anade la raiz del proyecto al path para que `from src.X import Y` funcione
+# cuando se ejecuta `streamlit run src/app.py` desde la raiz.
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
+import streamlit as st  # noqa: E402
+
+from src.config import load_config  # noqa: E402
+from src.llm.client import LLMClient  # noqa: E402
+from src.orchestrator import process_question  # noqa: E402
+from src.ui.components import (  # noqa: E402
     render_error,
     render_results,
     render_sidebar,
