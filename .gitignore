@@ -41,6 +41,16 @@ Thumbs.db
 .idea/
 *.iml
 
+# --- Java / Maven (backend) ---
+java/target/
+java/.mvn/wrapper/maven-wrapper.jar
+
+# --- Node / Angular (frontend) ---
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/coverage/
+
 # --- Estado interno del harness (sesiones del agente) ---
 .harness/memory/
 .harness/research/
