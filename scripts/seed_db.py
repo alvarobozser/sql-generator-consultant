@@ -21,11 +21,11 @@ sys.path.insert(0, str(_PROJECT_ROOT))
 
 from src.config import load_config  # noqa: E402
 
-SCHEMA_PATH = _PROJECT_ROOT / "schema.sql"
+SCHEMA_PATH = _PROJECT_ROOT / "db" / "schema.sql"
 
 
 def _read_schema() -> str:
-    """Lee el archivo schema.sql desde la raíz del proyecto."""
+    """Lee el archivo schema.sql desde db/ en la raíz del proyecto."""
     if not SCHEMA_PATH.exists():
         raise FileNotFoundError(f"No se encuentra schema.sql en {SCHEMA_PATH}")
     return SCHEMA_PATH.read_text(encoding="utf-8")
