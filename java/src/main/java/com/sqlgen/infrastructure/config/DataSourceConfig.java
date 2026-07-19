@@ -24,53 +24,60 @@ import javax.sql.DataSource;
 @Configuration
 public class DataSourceConfig {
 
-    @Bean
+    /** Propiedades del DataSource admin (read-write). */
+    @Bean(name = "adminDataSourceProperties")
     @Primary
     @ConfigurationProperties("spring.datasource")
     public DataSourceProperties adminDataSourceProperties() {
         return new DataSourceProperties();
     }
 
-    @Bean(name = "adminDataSource")
-    @Primary
-    public DataSource adminDataSource() {
-        DataSourceProperties props = adminDataSourceProperties();
-        return DataSourceBuilder.create()
-            .url(props.getUrl())
-            .username(props.getUsername())
-            .password(props.getPassword())
-            .driverClassName("org.postgresql.Driver")
-            .build();
-    }
-
-    @Bean(name = "readonlyDataSource")
+    /** Propiedades del DataSource readonly. */
+    @Bean(name = "readonlyDataSourceProperties")
     @ConfigurationProperties("spring.datasource.readonly")
     public DataSourceProperties readonlyDataSourceProperties() {
         return new DataSourceProperties();
     }
 
+    /** DataSource admin (read-write). */
+    @Bean(name = "adminDataSource")
+    @Primary
+    public DataSource adminDataSource(
+        @Qualifier("adminDataSourceProperties") DataSourceProperties props
+    ) {
+        return buildDataSource(props);
+    }
+
+    /** DataSource readonly (solo SELECT). */
     @Bean(name = "readonlyDataSource")
-    public DataSource readonlyDataSource() {
-        DataSourceProperties props = readonlyDataSourceProperties();
-        return DataSourceBuilder.create()
-            .url(props.getUrl())
-            .username(props.getUsername())
-            .password(props.getPassword())
-            .driverClassName("org.postgresql.Driver")
-            .build();
+    public DataSource readonlyDataSource(
+        @Qualifier("readonlyDataSourceProperties") DataSourceProperties props
+    ) {
+        return buildDataSource(props);
     }
 
+    /** JdbcTemplate para el admin. */
     @Bean(name = "adminJdbcTemplate")
-    public JdbcTemplate adminJdbcTemplate(@Qualifier("adminDataSource") DataSource dataSource) {
-        return new JdbcTemplate(dataSource);
+    public JdbcTemplate adminJdbcTemplate(@Qualifier("adminDataSource") DataSource ds) {
+        return new JdbcTemplate(ds);
     }
 
+    /** JdbcTemplate readonly (usado por el DatabasePort). */
     @Bean(name = "readonlyJdbcTemplate")
-    public JdbcTemplate readonlyJdbcTemplate(@Qualifier("readonlyDataSource") DataSource dataSource) {
-        return new JdbcTemplate(dataSource);
+    public JdbcTemplate readonlyJdbcTemplate(@Qualifier("readonlyDataSource") DataSource ds) {
+        return new JdbcTemplate(ds);
     }
 
-    /** Wrapper para tener las props con su tipo concreto. */
+    private DataSource buildDataSource(DataSourceProperties props) {
+        HikariDataSource ds = new HikariDataSource();
+        ds.setJdbcUrl(props.getUrl());
+        ds.setUsername(props.getUsername());
+        ds.setPassword(props.getPassword());
+        ds.setDriverClassName("org.postgresql.Driver");
+        return ds;
+    }
+
+    /** Properties de un DataSource (URL, user, pass). */
     public static class DataSourceProperties {
         private String url;
         private String username;

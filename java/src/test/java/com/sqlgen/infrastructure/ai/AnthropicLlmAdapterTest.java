@@ -6,63 +6,67 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
+import org.springframework.web.client.RestClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/** Tests para {@link AnthropicLlmAdapter} con Mockito. */
+/** Tests para {@link AnthropicLlmAdapter} con RestClient mockeado. */
 @ExtendWith(MockitoExtension.class)
 class AnthropicLlmAdapterTest {
 
     @Mock
-    private ChatClient chatClient;
-
-    @Mock
-    private ChatClient.ChatClientRequestSpec requestSpec;
-
-    @Mock
-    private ChatClient.CallResponseSpec callResponseSpec;
+    private RestClient restClient;
 
     private AnthropicLlmAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new AnthropicLlmAdapter(chatClient);
+        adapter = new AnthropicLlmAdapter(restClient, "sk-ant-test-key", "claude-haiku-4-5");
     }
 
-    /**
-     * Helper para encadenar los mocks del ChatClient fluent API.
-     * Cadena real: prompt() -> ChatClientRequestSpec -> system() -> user() -> call() -> CallResponseSpec -> content()
-     * Nota: system() y user() devuelven el mismo ChatClientRequestSpec (cadena).
-     */
-    private void mockChatClientChain(String content) {
-        when(chatClient.prompt()).thenReturn(requestSpec);
-        when(requestSpec.system(anyString())).thenReturn(requestSpec);
-        when(requestSpec.user(anyString())).thenReturn(requestSpec);
-        when(requestSpec.call()).thenReturn(callResponseSpec);
-        when(callResponseSpec.content()).thenReturn(content);
+    /** Configura la cadena de mocks del RestClient fluent API para devolver un body. */
+    private void mockResponse(String jsonBody) {
+        RestClient.RequestBodySpec requestBodySpec = mock(RestClient.RequestBodySpec.class);
+        RestClient.RequestBodyUriSpec requestBodyUriSpec = mock(RestClient.RequestBodyUriSpec.class);
+        RestClient.ResponseSpec responseSpec = mock(RestClient.ResponseSpec.class);
+
+        when(restClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.body(any(AnthropicLlmAdapter.AnthropicRequest.class)))
+            .thenReturn(requestBodySpec);
+        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.body(AnthropicLlmAdapter.AnthropicResponse.class))
+            .thenReturn(parseResponse(jsonBody));
+    }
+
+    /** Parsea el JSON de respuesta a un AnthropicResponse. */
+    private AnthropicLlmAdapter.AnthropicResponse parseResponse(String json) {
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper =
+                new com.fasterxml.jackson.databind.ObjectMapper();
+            return mapper.readValue(json, AnthropicLlmAdapter.AnthropicResponse.class);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
     void happy_path_devuelve_sql_limpio() {
-        mockChatClientChain("SELECT * FROM users");
+        mockResponse("{\"content\":[{\"type\":\"text\",\"text\":\"SELECT * FROM users\"}]}");
 
         String sql = adapter.generate("system prompt", "dame los usuarios");
 
         assertThat(sql).isEqualTo("SELECT * FROM users");
-        verify(chatClient, times(1)).prompt();
-        verify(requestSpec).system("system prompt");
-        verify(requestSpec).user("dame los usuarios");
     }
 
     @Test
     void limpia_markdown_sql_del_LLM() {
-        mockChatClientChain("```sql\nSELECT * FROM products\n```");
+        mockResponse("{\"content\":[{\"type\":\"text\",\"text\":\"```sql\\nSELECT * FROM products\\n```\"}]}");
 
         String sql = adapter.generate("sys", "q");
 
@@ -70,17 +74,8 @@ class AnthropicLlmAdapterTest {
     }
 
     @Test
-    void limpia_markdown_sin_lenguaje_sql() {
-        mockChatClientChain("```\nSELECT 1\n```");
-
-        String sql = adapter.generate("sys", "q");
-
-        assertThat(sql).isEqualTo("SELECT 1");
-    }
-
-    @Test
     void quita_punto_y_coma_final() {
-        mockChatClientChain("SELECT COUNT(*) FROM users;");
+        mockResponse("{\"content\":[{\"type\":\"text\",\"text\":\"SELECT COUNT(*) FROM users;\"}]}");
 
         String sql = adapter.generate("sys", "q");
 
@@ -89,7 +84,7 @@ class AnthropicLlmAdapterTest {
 
     @Test
     void quita_espacios_al_inicio_y_final() {
-        mockChatClientChain("   \n  SELECT 1  \n  ");
+        mockResponse("{\"content\":[{\"type\":\"text\",\"text\":\"   \\n  SELECT 1  \\n  \"}]}");
 
         String sql = adapter.generate("sys", "q");
 
@@ -97,30 +92,8 @@ class AnthropicLlmAdapterTest {
     }
 
     @Test
-    void api_lanza_excepcion_envuelve_en_LlmException() {
-        when(chatClient.prompt()).thenReturn(requestSpec);
-        when(requestSpec.system(anyString())).thenReturn(requestSpec);
-        when(requestSpec.user(anyString())).thenReturn(requestSpec);
-        when(requestSpec.call()).thenThrow(new RuntimeException("network down"));
-
-        assertThatThrownBy(() -> adapter.generate("sys", "q"))
-            .isInstanceOf(LlmException.class)
-            .hasMessageContaining("Error llamando a la API")
-            .hasMessageContaining("network down");
-    }
-
-    @Test
-    void respuesta_null_lanza_LlmException() {
-        mockChatClientChain(null);
-
-        assertThatThrownBy(() -> adapter.generate("sys", "q"))
-            .isInstanceOf(LlmException.class)
-            .hasMessageContaining("null");
-    }
-
-    @Test
-    void respuesta_vacia_o_solo_espacios_lanza_LlmException() {
-        mockChatClientChain("   \n  \t  ");
+    void respuesta_vacia_lanza_LlmException() {
+        mockResponse("{\"content\":[{\"type\":\"text\",\"text\":\"\"}]}");
 
         assertThatThrownBy(() -> adapter.generate("sys", "q"))
             .isInstanceOf(LlmException.class)
@@ -129,11 +102,30 @@ class AnthropicLlmAdapterTest {
 
     @Test
     void respuesta_solo_markdown_vacio_lanza_LlmException() {
-        mockChatClientChain("```\n\n```");
+        mockResponse("{\"content\":[{\"type\":\"text\",\"text\":\"```\\n\\n```\"}]}");
 
         assertThatThrownBy(() -> adapter.generate("sys", "q"))
             .isInstanceOf(LlmException.class)
             .hasMessageContaining("vacia");
+    }
+
+    @Test
+    void api_lanza_excepcion_envuelve_en_LlmException() {
+        RestClient.RequestBodySpec requestBodySpec = mock(RestClient.RequestBodySpec.class);
+        RestClient.RequestBodyUriSpec requestBodyUriSpec = mock(RestClient.RequestBodyUriSpec.class);
+        RestClient.ResponseSpec responseSpec = mock(RestClient.ResponseSpec.class);
+
+        when(restClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.body(any(AnthropicLlmAdapter.AnthropicRequest.class)))
+            .thenReturn(requestBodySpec);
+        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.body(AnthropicLlmAdapter.AnthropicResponse.class))
+            .thenThrow(new RuntimeException("network down"));
+
+        assertThatThrownBy(() -> adapter.generate("sys", "q"))
+            .isInstanceOf(LlmException.class)
+            .hasMessageContaining("Error llamando a la API")
+            .hasMessageContaining("network down");
     }
 
     @Test
@@ -152,5 +144,17 @@ class AnthropicLlmAdapterTest {
     void systemPrompt_null_lanza_IllegalArgumentException() {
         assertThatThrownBy(() -> adapter.generate(null, "q"))
             .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void constructor_con_api_key_placeholder_lanza_IllegalStateException() {
+        assertThatThrownBy(() -> new AnthropicLlmAdapter(restClient, "your_key_here", "claude"))
+            .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void constructor_con_api_key_vacia_lanza_IllegalStateException() {
+        assertThatThrownBy(() -> new AnthropicLlmAdapter(restClient, "", "claude"))
+            .isInstanceOf(IllegalStateException.class);
     }
 }

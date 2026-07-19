@@ -17,13 +17,14 @@ spring:
       username: ${JAVA_DATASOURCE_READONLY_USERNAME:sqlgen_readonly}
       password: ${JAVA_DATASOURCE_READONLY_PASSWORD:readonly_password}
       driver-class-name: org.postgresql.Driver
-  ai:
-    anthropic:
-      api-key: ${SPRING_AI_ANTHROPIC_API_KEY:your_key_here}
-      chat:
-        options:
-          model: ${LLM_MODEL:claude-haiku-4-5}
-          temperature: 0.0
+
+# SDK nativo de Anthropic (leido directamente, sin pasar por Spring AI).
+# Spring AI 1.x tiene un bug con Anthropic (envia Authorization: Bearer
+# en vez de x-api-key), por eso usamos el SDK nativo.
+anthropic:
+  api-key: ${ANTHROPIC_API_KEY:your_key_here}
+llm:
+  model: ${LLM_MODEL:claude-haiku-4-5}
 
 server:
   port: 8080
@@ -37,7 +38,6 @@ springdoc:
 logging:
   level:
     com.sqlgen: DEBUG
-    org.springframework.ai: INFO
 
 management:
   endpoints:
