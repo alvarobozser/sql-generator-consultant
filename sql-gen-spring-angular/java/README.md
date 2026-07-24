@@ -1,14 +1,14 @@
 # sqlgen-backend (Spring Boot)
 
 Backend Java del AI SQL Query Generator (Issue #2). Replica 1:1 de la version Python
-usando arquitectura hexagonal, Spring Boot 3.3 y Spring AI 1.0 con Anthropic Claude.
+usando arquitectura hexagonal, Spring Boot 3.3 y HTTP directo a Anthropic Claude.
 
 ## Requisitos
 
 - Java 21 LTS
-- Maven 3.9+ (o usar el wrapper si se anade)
-- PostgreSQL 16 corriendo (ver `../docker-compose.yml` en la raiz)
-- `ANTHROPIC_API_KEY` configurada en `../.env`
+- Maven 3.9+
+- PostgreSQL 16 corriendo (ver `../../../docker-compose.yml` en la raiz)
+- `ANTHROPIC_API_KEY` configurada en `../../../.env` (raiz del repo)
 
 ## Comandos
 

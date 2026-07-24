@@ -1,7 +1,9 @@
 """Script de seed: crea el schema e inserta datos de ejemplo en PostgreSQL.
 
-Uso:
-    python -m scripts.seed_db
+Uso (desde la raiz del repo):
+    python -m sql-gen-python.scripts.seed_db
+    # o bien:
+    cd sql-gen-python && python -m scripts.seed_db
 
 Lee DATABASE_URL del entorno o del .env. El script es idempotente:
 puede ejecutarse varias veces seguidas sin error (DROP IF EXISTS al inicio).
@@ -14,14 +16,24 @@ from pathlib import Path
 
 import psycopg
 
-# Permite ejecutar el script tanto como módulo (python -m scripts.seed_db)
-# como script directo (python scripts/seed_db.py).
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(_PROJECT_ROOT))
+# Estructura del repo (tras la reorganizacion):
+#   nproject/
+#   ├── db/schema.sql                    <- schema compartido
+#   ├── sql-gen-python/                   <- este script
+#   │   ├── src/config.py                 <- importado aqui
+#   │   └── scripts/seed_db.py            <- este archivo
+#   └── sql-gen-spring-angular/
+#
+# _REPO_ROOT apunta a la raiz del repo (necesario para db/ y src/).
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_PYTHON_PROJECT = _REPO_ROOT / "sql-gen-python"
+
+# Anade sql-gen-python/ al path para que `from src.config import ...` funcione.
+sys.path.insert(0, str(_PYTHON_PROJECT))
 
 from src.config import load_config  # noqa: E402
 
-SCHEMA_PATH = _PROJECT_ROOT / "db" / "schema.sql"
+SCHEMA_PATH = _REPO_ROOT / "db" / "schema.sql"
 
 
 def _read_schema() -> str:
