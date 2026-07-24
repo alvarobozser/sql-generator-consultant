@@ -1,16 +1,16 @@
-# --- Python ---
+# --- Python (version sql-gen-python/) ---
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 
-# Entornos virtuales
+# Entornos virtuales (cualquier venv, en cualquier subcarpeta)
 .venv/
 venv/
 env/
 ENV/
 
-# Distribución / builds
+# Distribución / builds Python
 *.egg-info/
 build/
 dist/
@@ -21,6 +21,8 @@ dist/
 .env
 .env.*
 !.env.example
+sql-gen-python/.env
+sql-gen-spring-angular/.env
 
 # --- Bases de datos (archivos generados en runtime) ---
 *.db
@@ -35,25 +37,27 @@ dist/
 *.swp
 .DS_Store
 Thumbs.db
+.pytest_cache/
+.ruff_cache/
 
 # --- IDEs / editores ---
 .vscode/
 .idea/
 *.iml
 
-# --- Java / Maven (backend) ---
-java/target/
-java/.mvn/wrapper/maven-wrapper.jar
+# --- Java / Maven (sql-gen-spring-angular/java/) ---
+sql-gen-spring-angular/java/target/
+sql-gen-spring-angular/java/.mvn/wrapper/maven-wrapper.jar
 
-# --- Node / Angular (frontend) ---
-frontend/node_modules/
-frontend/dist/
-frontend/.angular/
-frontend/coverage/
+# --- Node / Angular (sql-gen-spring-angular/frontend/) ---
+sql-gen-spring-angular/frontend/node_modules/
+sql-gen-spring-angular/frontend/dist/
+sql-gen-spring-angular/frontend/.angular/
+sql-gen-spring-angular/frontend/coverage/
 
 # --- Estado interno del harness (sesiones del agente) ---
 .harness/memory/
 .harness/research/
 .harness/tech/
 
-# NOTA: AGENTS.md y CLAUDE.md SÍ se trackean — son docs del proyecto.
+# NOTA: AGENTS.md, CLAUDE.md y los README.md SÍ se trackean — son docs del proyecto.

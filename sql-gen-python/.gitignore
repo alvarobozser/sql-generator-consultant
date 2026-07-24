@@ -1,0 +1,14 @@
+# .gitignore local de sql-gen-python/
+# Las reglas principales estan en el .gitignore raiz.
+
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+.env
+.env.*

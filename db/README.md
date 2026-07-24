@@ -20,7 +20,9 @@ docker compose down -v
 docker compose up -d
 
 # Cargar schema + datos
-python -m scripts.seed_db
+python -m sql-gen-python.scripts.seed_db
+# o bien:
+cd sql-gen-python && python -m scripts.seed_db
 ```
 
 ### Verificar el usuario readonly

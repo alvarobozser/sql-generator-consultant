@@ -1,0 +1,17 @@
+# .gitignore local de sql-gen-spring-angular/
+# Las reglas principales estan en el .gitignore raiz.
+
+# Java
+java/target/
+java/.mvn/wrapper/maven-wrapper.jar
+java/.idea/
+
+# Angular
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/coverage/
+frontend/.idea/
+
+# Logs
+*.log
